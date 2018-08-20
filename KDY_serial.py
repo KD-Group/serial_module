@@ -1,6 +1,6 @@
 import crcmod.predefined
 
-import real_serial
+from base import real_serial
 
 
 class KDY_serial(real_serial):
