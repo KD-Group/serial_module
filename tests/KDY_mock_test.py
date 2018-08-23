@@ -1,7 +1,6 @@
 import unittest
 
-import exception
-import serials
+from serial_mod import exception, serials
 
 
 class KDYSerialTest(unittest.TestCase):
@@ -37,6 +36,15 @@ class KDYSerialTest(unittest.TestCase):
         self.assertEqual(kdy.read().current_level, 0.01)
         kdy.send_show_voltage_request()
         self.assertIsInstance(kdy.read().voltage_show, float)
+
+    def test_is_pressed(self):
+        kdy = serials.KDYSerialController(mock=True)
+        kdy.connect_serial()
+
+        # self.assertRaises(exception.NotSetCurrentException, kdy.is_pressed)
+
+        kdy.send_set_current_request(0.1)
+        self.assertTrue(kdy.is_pressed())
 
 
 if __name__ == '__main__':

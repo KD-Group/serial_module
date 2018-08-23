@@ -2,8 +2,7 @@ import random
 import time
 from abc import abstractmethod
 
-import exception
-import interface
+from serial_mod import interface, exception
 
 
 class MockSerial(interface.SerialInterface):

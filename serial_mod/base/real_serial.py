@@ -1,6 +1,6 @@
 import serial.tools.list_ports
 
-import interface
+from serial_mod import interface
 
 
 class RealSerial(interface.SerialInterface):
@@ -46,7 +46,9 @@ class RealSerial(interface.SerialInterface):
 
     # 遍历所有端口，找出适配的端口（即使用通讯协议，进行通讯，通过返回消息来确定端口是否正确）
     def connect_suitable_port(self) -> bool:
+        # print(self.get_all_ports())
         for port in self.get_all_ports():
+            # print(port)
             if not self.connect(port):
                 continue
             # todo: 完成初始化通讯，保证接口正确,使用抽象类
@@ -69,7 +71,3 @@ class RealSerial(interface.SerialInterface):
 
     def read_line(self):
         pass
-
-# s = RealSerial()
-# print(s.get_all_ports())
-# print(s.connect("COM1"))

@@ -1,0 +1,2 @@
+class NotSetCurrentException(Exception):
+    pass

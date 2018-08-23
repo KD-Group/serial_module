@@ -1,7 +1,7 @@
 import crcmod
 from func_timeout import exceptions, func_timeout
 
-import exception
+from serial_mod import exception
 
 
 def calculate_crc8(data) -> str:

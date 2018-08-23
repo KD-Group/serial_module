@@ -1,6 +1,6 @@
 import time
 
-import base
+from serial_mod import base
 import common
 
 
@@ -8,7 +8,7 @@ class KDYMockSerial(base.MockSerial):
     current_level = None
 
     def respond(self, input: str) -> str:
-        print("request: " + input)
+        # print("request: " + input)
         # 查询版本号
         if input == "0xF5 0x02 0xff 0x1c":
             return "0xFa 0x09 0xff 0x32 0x32 0x32 0x31 0x36 0x36 0x36 0xee"
@@ -28,7 +28,7 @@ class KDYMockSerial(base.MockSerial):
         # 上位机请求格式: F5 03 A1 [01:电压 | 02: 电流] [crc8]
         # 单片机返回格式: FA 07 1A [电流档位] ["设备: 电压:01 | 电流表:02] [data1] [data2] [data3] [crc8]
         # exa: Data1, data2, data3表示当前显示的数值， 00 10 10表示10.1
-        print(self.current_level)
+        # print(self.current_level)
         if data_list[2] == common.to_hex_str("A1") and self.current_level is not None:
             return common.append_crc8(
                 common.to_hex_str("FA 07 1A " + self.current_level + " " + data_list[3] + " 11 11 11"))

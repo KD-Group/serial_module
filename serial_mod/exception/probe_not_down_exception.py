@@ -1,0 +1,2 @@
+class ProbeNotDownException(Exception):
+    pass
