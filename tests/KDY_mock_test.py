@@ -27,15 +27,16 @@ class KDYSerialTest(unittest.TestCase):
         kdy.send_set_current_request(0.01)
         self.assertEqual(kdy.read().current_level, 0.01)
         kdy.send_show_current_request()
-        self.assertIsInstance(kdy.read().current_show, float)
+        self.assertIsInstance(kdy.read_current(), float)
 
     def test_set_show_voltage_request(self):
         kdy = serials.KDYSerialController(mock=True)
         kdy.connect_serial()
         kdy.send_set_current_request(0.01)
         self.assertEqual(kdy.read().current_level, 0.01)
-        kdy.send_show_voltage_request()
-        self.assertIsInstance(kdy.read().voltage_show, float)
+
+        self.assertIsInstance(kdy.read_forward_voltage(), float)
+        self.assertIsInstance(kdy.read_reverse_voltage(), float)
 
     def test_is_pressed(self):
         kdy = serials.KDYSerialController(mock=True)

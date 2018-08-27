@@ -17,6 +17,7 @@ class KDYSerialController():
     current_level = None
     timeout = 0.5
     current = 1  # 默认电流
+    voltage_direction = "00"  # 00 为正向, 01 为反向
 
     current_map = {
         0.001: "00",
@@ -143,9 +144,40 @@ class KDYSerialController():
                 "解析单片机对获取当前电压的返回消息错误: 第4位字节[" + data_list[2] + "]不是电压表指令('02')")
         voltage_show_number = 0
         voltage_show_number += common.hex_str_to_int(data_list[5]) * 100
-        voltage_show_number += common.hex_str_to_int(data_list[4])
-        voltage_show_number += common.hex_str_to_int(data_list[4]) * 0.01
+        voltage_show_number += common.hex_str_to_int(data_list[6])
+        voltage_show_number += common.hex_str_to_int(data_list[7]) * 0.01
         result.voltage_show = voltage_show_number
+        return result
+
+    # 设置电压正反向控制:
+    # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
+    # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
+    def send_voltage_forward_request(self):
+        self.serial.send(common.append_crc8("F5 03 A2 00"))
+        self.voltage_direction = "00"
+        self.respond_parse_func_point = self.read_set_voltage_direction_respond
+
+    # 设置电压正反向控制:
+    # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
+    # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
+    def send_voltage_reverse_request(self):
+        self.serial.send(common.append_crc8("F5 03 A2 01"))
+        self.voltage_direction = "01"
+        self.respond_parse_func_point = self.read_set_voltage_direction_respond
+
+    # 设置电压正反向控制:
+    # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
+    # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
+    def read_set_voltage_direction_respond(self, data):
+        data_list = data.split()
+        if data_list[2] != common.to_hex_str("2A"):
+            raise exception.RespondParseException(
+                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节[" + data_list[2] + "]不是功能指令")
+
+        if data_list[3] != common.to_hex_str(self.voltage_direction):
+            raise exception.RespondParseException(
+                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节电压方向[" + data_list[2] + "]不是之前设置的电压方向[" + self.voltage_direction + "]")
+        result = Result()
         return result
 
     def get_key_by_value(self, value):
@@ -165,10 +197,9 @@ class KDYSerialController():
         # data = self.serial.read_line()
         data = ""
         for i in range(0, 3):  # 尝试3次读取
-            print("第" + str(i) + "次尝试读取数据")
+            # print("第" + str(i) + "次尝试读取数据")
             try:
                 data = self.read_with_timeout_exception()
-                print(data)
                 break
             except exception.TimeoutException:
                 continue
@@ -206,6 +237,16 @@ class KDYSerialController():
         """
         self.send_show_voltage_request()
         return self.read().voltage_show
+
+    def read_forward_voltage(self) -> float:
+        self.send_voltage_forward_request()
+        self.read()
+        return self.read_voltage()
+
+    def read_reverse_voltage(self) -> float:
+        self.send_voltage_reverse_request()
+        self.read()
+        return self.read_voltage()
 
     def read_current(self) -> float:
         """

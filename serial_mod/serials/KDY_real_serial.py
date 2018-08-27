@@ -6,6 +6,3 @@ class KDYRealSerial(base.RealSerial):
     # todo: exception handle
     def find_port_by_init_msg(self) -> bool:
         return True
-
-
-r = KDYRealSerial()
