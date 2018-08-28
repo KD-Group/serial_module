@@ -1,3 +1,4 @@
+import serial
 import serial.tools.list_ports
 
 from serial_mod import interface
@@ -48,7 +49,6 @@ class RealSerial(interface.SerialInterface):
     def connect_suitable_port(self) -> bool:
         # print(self.get_all_ports())
         for port in self.get_all_ports():
-            # print(port)
             if not self.connect(port):
                 continue
             # todo: 完成初始化通讯，保证接口正确,使用抽象类
@@ -58,16 +58,16 @@ class RealSerial(interface.SerialInterface):
                 continue
         return False
 
-    def send(self, data: str):
+    def send(self, data: bytes):
         self.port.write(data)
 
     # todo: timeout exception handle
     def read(self, size=1) -> str:
         return self.port.read(size)
 
-    # todo: timeout exception handle
-    def read_until(self, expected=None, size=None):
-        pass
-
+    # todo: TypeError: object of type 'NoneType' has no len()
     def read_line(self):
-        pass
+        # self.port.timeout = sel
+        line = self.port.readline()
+        return line
+        # pass

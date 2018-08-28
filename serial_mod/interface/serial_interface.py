@@ -37,10 +37,10 @@ class SerialInterface(metaclass=ABCMeta):
     @abstractmethod
     def read(self, size=1) -> str:
         pass
-
-    @abstractmethod
-    def read_until(self, expected=None, size=None):
-        pass
+    #
+    # @abstractmethod
+    # def read_until(self, expected=None, size=None):
+    #     pass
 
     @abstractmethod
     def read_line(self):

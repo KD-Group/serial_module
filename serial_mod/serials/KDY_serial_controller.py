@@ -1,4 +1,5 @@
 import common
+from data_type import HexStruct
 from serial_mod import interface, exception
 from serial_mod.serials import KDYMockSerial, KDYRealSerial
 
@@ -20,12 +21,12 @@ class KDYSerialController():
     voltage_direction = "00"  # 00 为正向, 01 为反向
 
     current_map = {
-        0.001: "00",
-        0.01: "01",
-        0.1: "02",
-        1: "03",
-        10: "04",
-        100: "05",
+        0.001: 0,
+        0.01: 1,
+        0.1: 2,
+        1: 3,
+        10: 4,
+        100: 5,
     }
 
     def __init__(self, mock=True):
@@ -40,7 +41,8 @@ class KDYSerialController():
 
     def connect_serial(self):
         try:
-            self.serial.connect_suitable_port()
+            if not self.serial.connect_suitable_port():
+                raise Exception("请检查接口是否接好，或者串行端口是否被占用")
         except Exception as e:
             raise exception.ConnectionException(str(e))
 
@@ -49,18 +51,18 @@ class KDYSerialController():
         assert self.current_map.__contains__(current)
         self.current = current
         converted_current = self.current_map[current]
-        self.serial.send(common.append_crc8("F5 03 C1 " + converted_current))
+        self.serial.send(HexStruct("F5 03 C1 " + str(converted_current)).append_crc8().to_bytes())
         self.respond_parse_func_point = self.read_current_respond
 
     # 单片机返回格式: FA 04 1C [电流档位] [探头是否压下: 是:01 | 否:00] [crc8]
-    def read_current_respond(self, data: str) -> Result:
+    def read_current_respond(self, data: HexStruct) -> Result:
         # todo: exception: timeout parse_exception
         result = Result()
-        data_list = data.split()
-        for k, v in self.current_map.items():
-            if common.to_hex_str(v) == data_list[3]:
-                result.current_level = k
-                self.current_level = common.to_hex_str(v)
+        data_list = data.list
+        for actual_value, map_value in self.current_map.items():
+            if map_value == data_list[3]:
+                result.current_level = actual_value
+                self.current_level = map_value
                 break
         if result.current_level is None:
             raise exception.RespondParseException(
@@ -68,17 +70,17 @@ class KDYSerialController():
 
         if result.current_level != self.current:
             raise exception.RespondParseException(
-                "解析单片机对设定当前测量档位的返回消息错误: 第4位字节[" + data_list[3] + "(" + str(result.current_level)
-                + ")]不是之前设定的电流档位指令[" + self.current_map[self.current] + "(" + str(self.current) + ")]"
+                "解析单片机对设定当前测量档位的返回消息错误: 第4位字节[{}({})]不是之前设定的电流档位指令[{}({})]"
+                    .format(data_list[3], result.current_level, self.current_map[self.current], self.current)
             )
 
-        if data_list[4] == "0x01":
+        if data_list[4] == 1:
             result.down = True
-        elif data_list[4] == "0x00":
+        elif data_list[4] == 0:
             result.down = False
         else:
             raise exception.RespondParseException(
-                "解析单片机对设定当前测量档位的返回消息错误: 第4位字节[" + data_list[4] + "]不是探头压下指令")
+                "解析单片机对设定当前测量档位的返回消息错误: 第4位字节[{}]不是探头压下指令".format(data_list[4]))
         return result
 
     def is_pressed(self) -> bool:
@@ -91,15 +93,15 @@ class KDYSerialController():
     # 读取当前显示数值（不等待）:
     # 上位机请求格式: F5 03 A1 [01:电压 | 02: 电流] [crc8]
     def send_show_current_request(self):
-        self.serial.send(common.append_crc8("F5 03 A1 02"))
+        self.serial.send(HexStruct("F5 03 A1 02").append_crc8().to_bytes())
         self.respond_parse_func_point = self.read_show_current_respond
 
     # 读取当前显示数值（不等待）:
     # 单片机返回格式: FA 07 1A [电流档位] ["设备: 电压:01 | 电流表:02] [data1] [data2] [data3] [crc8]
-    def read_show_current_respond(self, data: str):
+    def read_show_current_respond(self, data: HexStruct):
         result = Result()
-        data_list = data.split()
-        if data_list[2] != common.to_hex_str("1A"):
+        data_list = data.list
+        if data_list[2] != int("1A", 16):
             raise exception.RespondParseException(
                 "解析单片机对获取当前电流的返回消息错误: 第2位字节[" + data_list[2] + "]不是功能指令[0x1A]")
 
@@ -108,13 +110,13 @@ class KDYSerialController():
                 "解析单片机对获取当前电流的返回消息错误: 第3位字节电流档位[" + data_list[3] + "]不是之前设置的电流档位[" + self.current_level + "]")
         result.current_level = self.get_key_by_value(data_list[3])
 
-        if data_list[4] != common.to_hex_str("02"):
+        if data_list[4] != 2:
             raise exception.RespondParseException(
                 "解析单片机对获取当前电流的返回消息错误: 第4位字节[" + data_list[2] + "]不是电压表指令('02')")
         current_show_number = 0
-        current_show_number += common.hex_str_to_int(data_list[5]) * 100
-        current_show_number += common.hex_str_to_int(data_list[4])
-        current_show_number += common.hex_str_to_int(data_list[4]) * 0.01
+        current_show_number += data_list[5] * 100
+        current_show_number += data_list[6]
+        current_show_number += data_list[7] * 0.01
         result.current_show = current_show_number
 
         return result
@@ -122,15 +124,15 @@ class KDYSerialController():
     # 读取当前显示数值（不等待）:
     # 上位机请求格式: F5 03 A1 [01:电压 | 02: 电流] [crc8]
     def send_show_voltage_request(self):
-        self.serial.send(common.append_crc8("F5 03 A1 01"))
+        self.serial.send(HexStruct("F5 03 A1 01").append_crc8().to_bytes())
         self.respond_parse_func_point = self.read_show_voltage_request
 
     # 读取当前显示数值（不等待）:
     # 单片机返回格式: FA 07 1A [电流档位] ["设备: 电压:01 | 电流表:02] [data1] [data2] [data3] [crc8]
-    def read_show_voltage_request(self, data: str):
+    def read_show_voltage_request(self, data: HexStruct):
         result = Result()
-        data_list = data.split()
-        if data_list[2] != common.to_hex_str("1A"):
+        data_list = data.list
+        if data_list[2] != int("1A", 16):
             raise exception.RespondParseException(
                 "解析单片机对获取当前电压的返回消息错误: 第3位字节[" + data_list[2] + "]不是功能指令")
 
@@ -139,13 +141,13 @@ class KDYSerialController():
                 "解析单片机对获取当前电压的返回消息错误: 第3位字节电流档位[" + data_list[2] + "]不是之前设置的电流档位[" + self.current_level + "]")
         result.current_level = self.get_key_by_value(data_list[3])
 
-        if data_list[4] != common.to_hex_str("01"):
+        if data_list[4] != 1:
             raise exception.RespondParseException(
                 "解析单片机对获取当前电压的返回消息错误: 第4位字节[" + data_list[2] + "]不是电压表指令('02')")
         voltage_show_number = 0
-        voltage_show_number += common.hex_str_to_int(data_list[5]) * 100
-        voltage_show_number += common.hex_str_to_int(data_list[6])
-        voltage_show_number += common.hex_str_to_int(data_list[7]) * 0.01
+        voltage_show_number += data_list[5] * 100
+        voltage_show_number += data_list[6]
+        voltage_show_number += data_list[7] * 0.01
         result.voltage_show = voltage_show_number
         return result
 
@@ -153,36 +155,35 @@ class KDYSerialController():
     # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
     # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
     def send_voltage_forward_request(self):
-        self.serial.send(common.append_crc8("F5 03 A2 00"))
-        self.voltage_direction = "00"
+        self.serial.send(HexStruct("F5 03 A2 00").append_crc8().to_bytes())
+        self.voltage_direction = 0
         self.respond_parse_func_point = self.read_set_voltage_direction_respond
 
     # 设置电压正反向控制:
     # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
     # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
     def send_voltage_reverse_request(self):
-        self.serial.send(common.append_crc8("F5 03 A2 01"))
-        self.voltage_direction = "01"
+        self.serial.send(HexStruct("F5 03 A2 01").append_crc8().to_bytes())
+        self.voltage_direction = 1
         self.respond_parse_func_point = self.read_set_voltage_direction_respond
 
     # 设置电压正反向控制:
     # 上位机请求格式: F5 03 a2 [正反向: 正向:00|反向:01] [crc8]
     # 单片机返回格式: FA 03 2A [正反向: 正向:00|反向:01] [crc8]
-    def read_set_voltage_direction_respond(self, data):
-        data_list = data.split()
-        if data_list[2] != common.to_hex_str("2A"):
+    def read_set_voltage_direction_respond(self, data: HexStruct):
+        data_list = data.list
+        if data_list[2] != int("2a", 16):
             raise exception.RespondParseException(
-                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节[" + data_list[2] + "]不是功能指令")
-
-        if data_list[3] != common.to_hex_str(self.voltage_direction):
+                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节[{}]不是功能指令".format(data_list[2]))
+        if data_list[3] != int("cc", 16):
             raise exception.RespondParseException(
-                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节电压方向[" + data_list[2] + "]不是之前设置的电压方向[" + self.voltage_direction + "]")
+                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节电压方向[{}]不是之前设置的电压方向[{}]".format(data_list[2], self.voltage_direction))
         result = Result()
         return result
 
     def get_key_by_value(self, value):
         for k, v in self.current_map.items():
-            if common.to_hex_str(v) == value:
+            if v == value:
                 return k
         return None
 
@@ -195,40 +196,40 @@ class KDYSerialController():
         :return: Result
         """
         # data = self.serial.read_line()
-        data = ""
-        for i in range(0, 3):  # 尝试3次读取
+        data = b''
+        for i in range(0, 5):  # 尝试3次读取
             # print("第" + str(i) + "次尝试读取数据")
-            try:
-                data = self.read_with_timeout_exception()
-                break
-            except exception.TimeoutException:
+            data = self.serial.read_line()
+            if data == b'':
                 continue
-        if data == "":
+            else:
+                break
+
+        if data == b'':
             raise exception.TimeoutException("无法从串行接口读取数据(已重复3次,每次等待" + str(self.timeout) + "s): 通讯错误或无连接")
-        data = data.strip()
-        data_list = data.split()
+        hs = HexStruct(data)
+        data_list = hs.list
 
-        if data_list[0] != common.to_hex_str("FA"):
+        if data_list[0] != int("fa", 16):
             raise exception.RespondParseException("返回数据有误: 第一位字节[" + data_list[0] + "]不是预期的字节[0xFA]")
-        if common.hex_str_to_int(data_list[1]) != len(data_list) - 2:
+        if data_list[1] != len(data_list) - 2:
             raise exception.RespondParseException(
-                "返回数据有误: 第二位字节(表长度)[" + data_list[1] + "]不是预期的字节[" + str(len(data_list) - 2) + "]")
+                "返回数据有误: 第二位字节(表长度)[{}]不是预期的字节[{}]".format(data_list[1], len(data_list) - 2))
 
-        if not self.check_crc8(data):
-            raise exception.RespondParseException(
-                "返回数据有误: crc8 计算值有误")
+        if not hs.check_crc8():
+            raise exception.RespondParseException("返回数据有误: crc8 计算值有误")
 
-        return self.respond_parse_func_point(data)
-
-    def check_crc8(self, data: str) -> bool:
-        expected_value = data[-4:]
-        data = data[:-4]
-        return common.calculate_crc8(data) == expected_value
+        return self.respond_parse_func_point(hs)
 
     def set_current_with_probe_down(self, current: float):
         self.send_set_current_request(current)
         res = self.read()
         if res.down == False:
+            raise exception.ProbeNotDownException("设置电流" + str(current) + "错误,探头未压下")
+    def set_current_without_probe_down(self,current:float):
+        self.send_set_current_request(current)
+        res = self.read()
+        if res.down == True:
             raise exception.ProbeNotDownException("设置电流" + str(current) + "错误,探头未压下")
 
     def read_voltage(self) -> float:
@@ -254,3 +255,6 @@ class KDYSerialController():
         """
         self.send_show_current_request()
         return self.read().current_show
+
+    def close(self):
+        self.serial.close()
