@@ -1,12 +1,12 @@
 import unittest
 
-from serial_mod import serials
+from serial_mod import serials,KDASerialController
 
 
 class TestKDARealSerial(unittest.TestCase):
     # def test_exception(self):
     #     # not connection exception
-    #     kdy = serials.KDYSerialController(mock=True)
+    #     kdy = KDASerialController(mock=True)
     #     self.assertRaises(exception.NotConnectedException, kdy.read)
     #
     #     kdy.connect_serial()
@@ -15,7 +15,7 @@ class TestKDARealSerial(unittest.TestCase):
     #     self.assertRaises(exception.TimeoutException, kdy.read)
 
     def test_connect(self):
-        kdy = serials.KDYSerialController(mock=False)
+        kdy = KDASerialController(mock=False)
         kdy.connect_serial()
         self.assertTrue(kdy.serial.port is not None)
 
@@ -23,7 +23,7 @@ class TestKDARealSerial(unittest.TestCase):
 
     # 测试原始命令，请参考文档
     def test_origin_cmd(self):
-        kdy = serials.KDYSerialController(mock=False)
+        kdy = KDASerialController(mock=False)
         kdy.connect_serial()
         kdy.serial.send(b'\xf5\x03\xc1\x01:')
 
@@ -40,7 +40,7 @@ class TestKDARealSerial(unittest.TestCase):
 
     # 测试设置电流
     def test_set_current_request(self):
-        kdy = serials.KDYSerialController(mock=False)
+        kdy = KDASerialController(mock=False)
         kdy.connect_serial()
         kdy.send_set_current_request(0.01)
         self.assertEqual(kdy.read().current_level, 0.01)
@@ -49,7 +49,7 @@ class TestKDARealSerial(unittest.TestCase):
         kdy.close()
 
     def test_set_show_voltage_request(self):
-        kdy = serials.KDYSerialController(mock=False)
+        kdy = KDASerialController(mock=False)
         kdy.connect_serial()
         kdy.send_set_current_request(0.01)
         self.assertEqual(kdy.read().current_level, 0.01)
@@ -64,7 +64,7 @@ class TestKDARealSerial(unittest.TestCase):
 
     # 测试探头是否压下
     def test_is_pressed(self):
-        kdy = serials.KDYSerialController(mock=False)
+        kdy = KDASerialController(mock=False)
         kdy.connect_serial()
 
         kdy.set_current_without_probe_down(0.1)

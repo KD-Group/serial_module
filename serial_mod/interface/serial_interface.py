@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from serial_mod.base.serial_debug import SerialDebug
 
 
-class SerialInterface(metaclass=ABCMeta):
+class SerialInterface(SerialDebug,metaclass=ABCMeta):
     port = None
     timeout = 0.5  # unit: s
 

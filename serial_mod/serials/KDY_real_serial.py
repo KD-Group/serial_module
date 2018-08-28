@@ -1,4 +1,4 @@
-from data_type import HexStruct
+from serial_mod.data_type import HexStruct
 from serial_mod import base
 
 

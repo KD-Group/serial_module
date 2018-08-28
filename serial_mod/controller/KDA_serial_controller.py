@@ -1,6 +1,6 @@
-import common
-from data_type import HexStruct
 from serial_mod import interface, exception
+from serial_mod.base import SerialDebug
+from serial_mod.data_type import HexStruct
 from serial_mod.serials import KDYMockSerial, KDYRealSerial
 
 
@@ -11,7 +11,7 @@ class Result():
     down = None
 
 
-class KDYSerialController():
+class KDASerialController(SerialDebug):
     serial = None
     respond_parse_func_point = None
     last_result = None
@@ -29,12 +29,16 @@ class KDYSerialController():
         100: 5,
     }
 
-    def __init__(self, mock=True):
+    def __init__(self, mock=True, debug=False):
         if mock:
             self.set_serial(KDYMockSerial())
         else:
             self.set_serial(KDYRealSerial())
         self.serial.set_timeout(self.timeout)
+
+        if debug:
+            self.set_debug()
+            self.serial.set_debug()
 
     def set_serial(self, serial: interface.SerialInterface):
         self.serial = serial
@@ -177,7 +181,7 @@ class KDYSerialController():
                 "解析单片机对设置当前电压方向的返回消息错误: 第3位字节[{}]不是功能指令".format(data_list[2]))
         if data_list[3] != int("cc", 16):
             raise exception.RespondParseException(
-                "解析单片机对设置当前电压方向的返回消息错误: 第3位字节电压方向[{}]不是之前设置的电压方向[{}]".format(data_list[2], self.voltage_direction))
+                "解析单片机对设置当前电压方向的返回消息错误: 第4位字节电压方向[{}]不是之前设置的电压方向[{}]".format(data_list[2], self.voltage_direction))
         result = Result()
         return result
 
@@ -186,9 +190,6 @@ class KDYSerialController():
             if v == value:
                 return k
         return None
-
-    def read_with_timeout_exception(self):
-        return common.exec_with_timeout(self.timeout, self.serial.read_line)
 
     def read(self) -> Result:
         """
@@ -207,6 +208,7 @@ class KDYSerialController():
 
         if data == b'':
             raise exception.TimeoutException("无法从串行接口读取数据(已重复3次,每次等待" + str(self.timeout) + "s): 通讯错误或无连接")
+
         hs = HexStruct(data)
         data_list = hs.list
 
@@ -226,7 +228,8 @@ class KDYSerialController():
         res = self.read()
         if res.down == False:
             raise exception.ProbeNotDownException("设置电流" + str(current) + "错误,探头未压下")
-    def set_current_without_probe_down(self,current:float):
+
+    def set_current_without_probe_down(self, current: float):
         self.send_set_current_request(current)
         res = self.read()
         if res.down == True:

@@ -2,6 +2,7 @@ import serial
 import serial.tools.list_ports
 
 from serial_mod import interface
+from .serial_debug import SerialDebug
 
 
 class RealSerial(interface.SerialInterface):
@@ -13,6 +14,11 @@ class RealSerial(interface.SerialInterface):
         self.timeout = timeout
         self.baud_rate = baud_rate
         self.stop_bits = stop_bits
+        # self.set_debug()
+        self.debug_var("self.timeout")
+        self.debug_var("self.baud_rate")
+        self.debug_var("self.stop_bits")
+        self.debug_var("self.port_list")
 
     def close(self):
         if self.port is not None:
@@ -53,6 +59,8 @@ class RealSerial(interface.SerialInterface):
                 continue
             # todo: 完成初始化通讯，保证接口正确,使用抽象类
             if self.find_port_by_init_msg():
+                self.debug_print("连接并校验成功到接口:")
+                self.debug_var("self.port.name")
                 return True
             else:
                 continue
@@ -71,3 +79,7 @@ class RealSerial(interface.SerialInterface):
         line = self.port.readline()
         return line
         # pass
+
+    @property
+    def port_list(self):
+        return self.get_all_ports()

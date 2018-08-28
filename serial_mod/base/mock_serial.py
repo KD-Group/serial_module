@@ -2,6 +2,7 @@ import random
 import time
 from abc import abstractmethod
 
+from .serial_debug import SerialDebug
 from serial_mod import interface, exception
 
 

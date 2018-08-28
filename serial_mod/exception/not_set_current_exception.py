@@ -1,2 +1,0 @@
-class NotSetCurrentException(Exception):
-    pass
