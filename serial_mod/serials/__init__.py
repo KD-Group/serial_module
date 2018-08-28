@@ -1,2 +1,2 @@
-from .KDY_mock_serial import KDYMockSerial
-from .KDY_real_serial import KDYRealSerial
+from .KDA_mock_serial import KDAMockSerial
+from .KDA_real_serial import KDARealSerial

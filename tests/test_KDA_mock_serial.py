@@ -18,7 +18,7 @@ class KDYSerialTest(unittest.TestCase):
 
     def test_connect(self):
         kdy = KDASerialController(mock=True)
-        self.assertIsInstance(kdy.serial, serials.KDYMockSerial)
+        self.assertIsInstance(kdy.serial, serials.KDAMockSerial)
         kdy.connect_serial()
         self.assertTrue(kdy.serial.port is not None)
 
@@ -40,7 +40,7 @@ class KDYSerialTest(unittest.TestCase):
         self.assertIsInstance(kdy.read_reverse_voltage(), float)
 
     def test_is_pressed(self):
-        kdy = KDASerialController(mock=True, debug=True)
+        kdy = KDASerialController(mock=True)
         kdy.connect_serial()
 
         # self.assertRaises(exception.NotSetCurrentException, kdy.is_pressed)

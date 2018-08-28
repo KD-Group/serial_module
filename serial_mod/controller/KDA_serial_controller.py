@@ -1,7 +1,7 @@
 from serial_mod import interface, exception
 from serial_mod.base import SerialDebug
 from serial_mod.data_type import HexStruct
-from serial_mod.serials import KDYMockSerial, KDYRealSerial
+from serial_mod.serials import KDAMockSerial, KDARealSerial
 
 
 class Result():
@@ -31,9 +31,9 @@ class KDASerialController(SerialDebug):
 
     def __init__(self, mock=True, debug=False):
         if mock:
-            self.set_serial(KDYMockSerial())
+            self.set_serial(KDAMockSerial())
         else:
-            self.set_serial(KDYRealSerial())
+            self.set_serial(KDARealSerial())
         self.serial.set_timeout(self.timeout)
 
         if debug:

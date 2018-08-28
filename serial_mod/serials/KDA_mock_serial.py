@@ -5,7 +5,7 @@ from serial_mod import base
 from serial_mod.data_type import HexStruct
 
 
-class KDYMockSerial(base.MockSerial):
+class KDAMockSerial(base.MockSerial):
     current_level = None
     sleep_time = 0.01
     is_forward_current = True
