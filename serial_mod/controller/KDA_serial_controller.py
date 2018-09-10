@@ -21,7 +21,6 @@ class KDASerialController(SerialDebug):
     voltage_direction = "00"  # 00 为正向, 01 为反向
 
     current_map = {
-        0.001: 0,
         0.01: 1,
         0.1: 2,
         1: 3,
@@ -117,12 +116,9 @@ class KDASerialController(SerialDebug):
         if data_list[4] != 2:
             raise exception.RespondParseException(
                 "解析单片机对获取当前电流的返回消息错误: 第4位字节[" + data_list[2] + "]不是电压表指令('02')")
-        current_show_number = 0
-        current_show_number += data_list[5] * 100
-        current_show_number += data_list[6]
-        current_show_number += data_list[7] * 0.01
-        result.current_show = current_show_number
-
+        current_show_str = self.int_to_hex_show_str(data_list[5]) + self.int_to_hex_show_str(data_list[6]) + \
+                           self.int_to_hex_show_str(data_list[7])
+        result.current_show = int(current_show_str)
         return result
 
     # 读取当前显示数值（不等待）:
@@ -148,11 +144,10 @@ class KDASerialController(SerialDebug):
         if data_list[4] != 1:
             raise exception.RespondParseException(
                 "解析单片机对获取当前电压的返回消息错误: 第4位字节[" + data_list[2] + "]不是电压表指令('02')")
-        voltage_show_number = 0
-        voltage_show_number += data_list[5] * 100
-        voltage_show_number += data_list[6]
-        voltage_show_number += data_list[7] * 0.01
-        result.voltage_show = voltage_show_number
+        voltage_show_str = self.int_to_hex_show_str(data_list[5]) + \
+                           self.int_to_hex_show_str(data_list[6]) + \
+                           self.int_to_hex_show_str(data_list[7])
+        result.voltage_show = int(voltage_show_str)
         return result
 
     # 设置电压正反向控制:
@@ -261,3 +256,8 @@ class KDASerialController(SerialDebug):
 
     def close(self):
         self.serial.close()
+
+    def int_to_hex_show_str(self, data: int):
+        hex_str = hex(data)
+        int_str = hex_str[2:]
+        return int_str
