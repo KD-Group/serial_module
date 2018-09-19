@@ -50,7 +50,7 @@ class KDAMockSerial(base.MockSerial):
 
                 v = random.randint(46, 49)
                 return_value = HexStruct(
-                    "FA 07 1A {} {} 00 00 {}".format(self.current_level, data_list[3], v)).append_crc8().to_bytes()
+                    "FA 07 1A {} {} 00 {} {}".format(self.current_level, data_list[3], v,v)).append_crc8().to_bytes()
 
             if data_list[3] == 2:
                 return_value = HexStruct(

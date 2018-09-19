@@ -1,8 +1,9 @@
+import logging
+
 import serial
 import serial.tools.list_ports
 
 from serial_mod import interface
-from .serial_debug import SerialDebug
 
 
 class RealSerial(interface.SerialInterface):
@@ -67,6 +68,7 @@ class RealSerial(interface.SerialInterface):
         return False
 
     def send(self, data: bytes):
+        logging.info("上位机发送字节: {}".format(data))
         self.port.write(data)
 
     # todo: timeout exception handle
@@ -77,6 +79,7 @@ class RealSerial(interface.SerialInterface):
     def read_line(self):
         # self.port.timeout = sel
         line = self.port.readline()
+        logging.info("单片机发送字节: {}".format(line))
         return line
         # pass
 
