@@ -271,16 +271,21 @@ class KDASerialController(SerialDebug):
         self.send_show_voltage_request()
         return self.read().voltage_show
 
-    def read_forward_voltage(self) -> float:
-        logging.info("读取正向电压...")
+    def set_voltage_forward(self):
         self.send_voltage_forward_request()
         self.read()
+
+    def set_voltage_reverse(self):
+        self.send_voltage_reverse_request()
+        self.read()
+
+
+    def read_forward_voltage(self) -> float:
+        logging.info("读取正向电压...")
         return self.read_voltage()
 
     def read_reverse_voltage(self) -> float:
         logging.info("读取反向电压...")
-        self.send_voltage_reverse_request()
-        self.read()
         return self.read_voltage()
 
     def read_current(self) -> float:
