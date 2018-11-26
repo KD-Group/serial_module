@@ -10,6 +10,9 @@ class KDAMockSerial(base.MockSerial):
     sleep_time = 0.01
     is_forward_current = True
 
+    def __init__(self,timeout = 0 ):
+        self.set_timeout(timeout)
+
     def respond(self, input: bytes) -> bytes:
         if self.debug:
             print("{")
@@ -22,8 +25,8 @@ class KDAMockSerial(base.MockSerial):
             return_value = b"\xFa\x09\xff\x32\x32\x32\x31\x36\x36\x36\xee"
 
         hs = HexStruct(input)
-        if not hs.check_crc8():
-            time.sleep(self.timeout * 1.2)
+        # if not hs.check_crc8():
+        #     time.sleep(self.timeout * 1.2)
 
         data_list = hs.list
         # 设定当前测量档位,探头默认压下:

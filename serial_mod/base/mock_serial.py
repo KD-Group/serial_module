@@ -25,7 +25,7 @@ class MockSerial(interface.SerialInterface):
         if self.port is None:
             raise exception.NotConnectedException("未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
         if self.current_request is None:
-            time.sleep(self.timeout * 1.5)
+            time.sleep(self.timeout)
         else:
             request = self.current_request
             self.current_request = None
