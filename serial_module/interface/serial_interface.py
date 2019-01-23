@@ -1,10 +1,19 @@
+# comment: 串行接口类的通用接口,如有其它接口可放在这
+
 from abc import ABCMeta, abstractmethod
-from serial_mod.base.serial_debug import SerialDebug
 
 
-class SerialInterface(SerialDebug,metaclass=ABCMeta):
+class SerialInterface(metaclass=ABCMeta):
     port = None
     timeout = 0.5  # unit: s
+    parent = None
+
+    def __init__(self, serial_controller):
+        self.parent = serial_controller
+
+    @property
+    def logger(self):
+        return self.parent.logger
 
     def set_timeout(self, timeout: float):
         self.timeout = timeout
@@ -38,10 +47,6 @@ class SerialInterface(SerialDebug,metaclass=ABCMeta):
     @abstractmethod
     def read(self, size=1) -> str:
         pass
-    #
-    # @abstractmethod
-    # def read_until(self, expected=None, size=None):
-    #     pass
 
     @abstractmethod
     def read_line(self):

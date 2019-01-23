@@ -1,12 +1,12 @@
+# comment: 模拟通讯串行接口基类
 import random
 import time
 from abc import abstractmethod
+from serial_module import exception
+from serial_module.interface.serial_interface import SerialInterface
 
-from .serial_debug import SerialDebug
-from serial_mod import interface, exception
 
-
-class MockSerial(interface.SerialInterface):
+class MockSerial(SerialInterface):
     current_request = None
 
     @abstractmethod

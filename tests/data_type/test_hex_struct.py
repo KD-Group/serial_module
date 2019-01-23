@@ -1,6 +1,6 @@
 import unittest
 
-from serial_mod.data_type import HexStruct
+from serial_module.data_type import HexStruct
 
 
 class TestHexStruct(unittest.TestCase):

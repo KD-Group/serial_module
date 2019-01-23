@@ -1,3 +1,4 @@
+# comment: 十六进制结构体
 import crcmod
 
 
