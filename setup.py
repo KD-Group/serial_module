@@ -62,7 +62,7 @@ class VerifyVersionCommand(install):
 
 
 setup(
-    name="serial module",
+    name="serial_module",
     version=VERSION,
     description="串行接口模块简单包装,支持模拟接口和真实接口",
     long_description=readme(),

@@ -3,7 +3,7 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 # 工作流理解参考链接: https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
 
-# ! 使用deploy到pypi前需要在CircleCI页面手动设置PYPI_PASSWORD, $PYPI_USERNAME
+# ! 使用deploy到pypi前需要在CircleCI页面手动设置PYPI_PASSWORD, PYPI_USERNAME
 version: 2.1
 
 # 多个工作流使用同个环境(executor),避免多次编写
