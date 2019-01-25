@@ -36,7 +36,7 @@ def get_git_latest_tag():
         return out
 
     try:
-        out = _minimal_ext_cmd("git_hooks describe --abbrev=0 --tags")
+        out = _minimal_ext_cmd("git describe --abbrev=0 --tags")
         git_tag = out.strip().decode('ascii')
     except OSError:
         git_tag = "Unknown"
