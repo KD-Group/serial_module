@@ -11,11 +11,11 @@ from setuptools.command.install import install
 import subprocess
 
 # 要部署, 必须设置当前分支的git tag和VERSION一样.
-VERSION = "1.0.3"
+VERSION = "1.0.4"
 
 
 # 流程:
-# 1. 修改VENSION: VERSION = "1.0.3"
+# 1. 修改VENSION: VERSION = "1.0.4"
 # 2. git提交: git_hooks add setup.py && git_hooks commit -m "upload pypi" && git_hooks push
 # 3. 增加tag: git_hooks tag -a [版本号] -m "说明文字"
 # 4. 提交tag: git_hooks push --tag   // origin可修改为你的其它分支
