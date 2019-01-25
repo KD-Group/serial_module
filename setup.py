@@ -46,7 +46,7 @@ def get_git_latest_tag():
 
 def readme():
     """读取README.md文件"""
-    with open('README-en.md', encoding="utf-8") as f:
+    with open('README.md', encoding="utf-8") as f:
         return f.read()
 
 
