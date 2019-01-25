@@ -10,7 +10,11 @@ class RealSerial(SerialInterface):
     baud_rate = None
     stop_bits = 1
 
-    def __init__(self, serial_controller, timeout=0.5, baud_rate=9600, stop_bits=1):
+    def __init__(self,
+                 serial_controller,
+                 timeout=0.5,
+                 baud_rate=9600,
+                 stop_bits=1):
         super().__init__(serial_controller)
         self.timeout = timeout
         self.baud_rate = baud_rate
@@ -40,10 +44,11 @@ class RealSerial(SerialInterface):
             if self.port is not None:
                 self.close()
 
-            self.port = serial.Serial(port=port_name,
-                                      timeout=self.timeout,
-                                      baudrate=self.baud_rate,
-                                      stopbits=self.stop_bits)
+            self.port = serial.Serial(
+                port=port_name,
+                timeout=self.timeout,
+                baudrate=self.baud_rate,
+                stopbits=self.stop_bits)
             return True
 
         except serial.serialutil.SerialException as e:
@@ -58,7 +63,8 @@ class RealSerial(SerialInterface):
                 continue
             # todo: 完成初始化通讯，保证接口正确,使用抽象类
             if self.find_port_by_init_msg():
-                self.logger.info("connnect port successfully: {}".format(self.port.name))
+                self.logger.info("connnect port successfully: {}".format(
+                    self.port.name))
                 return True
             else:
                 continue

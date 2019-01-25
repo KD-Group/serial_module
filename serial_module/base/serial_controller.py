@@ -31,7 +31,10 @@ class SerialController:
             logger = logging.getLogger()
             sh = logging.StreamHandler()
             sh.setFormatter(
-                logging.Formatter('%(asc''time)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'))
+                logging.Formatter(
+                    '%(asc'
+                    'time)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'
+                ))
             if self.debug:
                 logger.setLevel(logging.DEBUG)
             else:
@@ -43,11 +46,13 @@ class SerialController:
     def serial(self):
         if self.is_mock:
             if self.mock_serial is None:
-                raise NotSetSerial("not set mock serial: use set_mock_serial(serial) to set")
+                raise NotSetSerial(
+                    "not set mock serial: use set_mock_serial(serial) to set")
             return self.mock_serial
         else:
             if self.real_serial is None:
-                raise NotSetSerial("not set real serial: use set_real(serial) to set")
+                raise NotSetSerial(
+                    "not set real serial: use set_real(serial) to set")
             return self.real_serial
 
     def set_logger(self, logger):

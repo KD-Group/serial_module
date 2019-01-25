@@ -33,7 +33,8 @@ class HexStruct():
 
     def check_crc8(self):
         if len(self.list) < 2:
-            raise Exception("can't check the crc8 value: the length of" + str(self.list) + " is less than 2")
+            raise Exception("can't check the crc8 value: the length of" +
+                            str(self.list) + " is less than 2")
         expected_crc8_value = self.list[-1]
         crc8 = crcmod.predefined.Crc('crc-8-maxim')
         crc8.update(bytes(self.list[0:-1]))

@@ -1,1 +1,1 @@
-from .hex_struct import HexStruct
+from .hex_struct import HexStruct

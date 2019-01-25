@@ -15,7 +15,8 @@ class MockSerial(SerialInterface):
 
     def send(self, data: str):
         if self.port is None:
-            raise exception.NotConnectedException("未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
+            raise exception.NotConnectedException(
+                "未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
         self.current_request = data
 
     def read(self, size=1):
@@ -23,7 +24,8 @@ class MockSerial(SerialInterface):
 
     def read_until(self, expected=None, size=None):
         if self.port is None:
-            raise exception.NotConnectedException("未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
+            raise exception.NotConnectedException(
+                "未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
         if self.current_request is None:
             time.sleep(self.timeout)
         else:
