@@ -11,7 +11,7 @@ from setuptools.command.install import install
 import subprocess
 
 # 要部署, 必须设置当前分支的git tag和VERSION一样.
-VERSION = "0.0.0"
+VERSION = "1.0.0"
 
 
 # 流程:
