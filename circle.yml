@@ -1,0 +1,107 @@
+# Python CircleCI 2.1 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+# 工作流理解参考链接: https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
+
+# ! 使用deploy到pypi前需要在CircleCI页面手动设置PYPI_PASSWORD, $PYPI_USERNAME
+version: 2.1
+
+# 多个工作流使用同个环境(executor),避免多次编写
+executors:
+  default:
+    docker:
+      - image: circleci/python:3.4
+        # 设置环境变量, 如果需要的话
+        environment:
+        # MYSQL_ROOT_HOST: 127.0.0.1
+        # MYSQL_ROOT_PASSWORD: password
+    # 设置工作目录
+    working_directory: ~/repo
+
+jobs:
+  build:
+    # 指定环境(executor)
+    executor: default
+    # 一次执行每一步
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          paths:
+            - ./venv
+      - run:
+          name: install python dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            [ -e requirements.txt ] && pip install -r requirements.txt
+            pip install pytest pycodestyle
+            pip install twine
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python -m pycodestyle . --max-line-length=120 --exclude=./venv
+            python -m pytest
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - .
+
+  deploy:
+    executor: default
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: verify git_hooks tag vs VERSION that occur in setup.py
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python setup.py verify
+
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+
+      - run:
+          name: create packages
+          command: |
+            python setup.py sdist
+            python setup.py bdist_wheel
+
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            twine upload dist/*
+
+# 指定工作流, 先build,然后在deploy
+# deploy只在打tag的分支上运行
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
