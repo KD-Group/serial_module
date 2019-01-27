@@ -10,5 +10,10 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
+build/
+dist/
+pypi_upload.sh
+erial_module.egg-info/
+
 # word doc
 ~*.doc

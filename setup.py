@@ -6,7 +6,7 @@
 """
 import os
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.install import install
 import subprocess
 
@@ -73,7 +73,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords='python serial',
-    packages=[],
+    packages=find_packages(exclude=['tests']),
     install_requires=[
         'serial',
     ],
