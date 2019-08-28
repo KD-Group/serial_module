@@ -1,6 +1,7 @@
 # comment: 真实通讯串行接口基类
 import serial
 import serial.tools.list_ports
+from serial_module.exception import TimeoutException
 
 from serial_module.interface.serial_interface import SerialInterface
 
@@ -72,15 +73,24 @@ class RealSerial(SerialInterface):
 
     def send(self, data: bytes):
         self.logger.info("send: {}".format(data))
-        self.port.write(data)
+        try:
+            self.port.write(data)
+        except serial.serialutil.SerialException as e:
+            raise TimeoutException("串行接口超时： {}".format(str(e)))
 
     # todo: timeout exception handle
     def read(self, size=1) -> str:
-        return self.port.read(size)
+        try:
+            return self.port.read(size)
+        except serial.serialutil.SerialException as e:
+            raise TimeoutException("串行接口超时： {}".format(str(e)))
 
     # todo: TypeError: object of type 'NoneType' has no len()
     def read_line(self):
-        line = self.port.readline()
+        try:
+            line = self.port.readline()
+        except serial.serialutil.SerialException as e:
+            raise TimeoutException("串行接口超时： {}".format(str(e)))
         self.logger.info("receive: {}".format(line))
         return line
 
