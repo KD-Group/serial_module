@@ -15,7 +15,7 @@ VERSION = "1.0.7"
 
 
 # 流程:
-# 1. 修改VENSION: VERSION = "1.0.7"
+# 1. 修改VENSION: VERSION = "1.0.8"
 # 2. git提交: git_hooks add setup.py && git_hooks commit -m "upload pypi" && git_hooks push
 # 3. 增加tag: git_hooks tag -a [版本号] -m "说明文字"
 # 4. 提交tag: git_hooks push --tag   // origin可修改为你的其它分支
