@@ -13,7 +13,6 @@ __pycache__/
 build/
 dist/
 pypi_upload.sh
-erial_module.egg-info/
-
+*.egg-info/
 # word doc
 ~*.doc

@@ -5,20 +5,9 @@
 :copyright: (c) 2018 by Jefung
 """
 import os
-import sys
-from setuptools import setup, find_packages
-from setuptools.command.install import install
+from setuptools import setup
 import subprocess
 
-# 要部署, 必须设置当前分支的git tag和VERSION一样.
-VERSION = "1.0.8"
-
-
-# 流程:
-# 1. 修改VENSION: VERSION = "1.0.8"
-# 2. git提交: git_hooks add setup.py && git_hooks commit -m "upload pypi" && git_hooks push
-# 3. 增加tag: git_hooks tag -a [版本号] -m "说明文字"
-# 4. 提交tag: git_hooks push --tag   // origin可修改为你的其它分支
 
 def get_git_latest_tag():
     def _minimal_ext_cmd(cmd: str):
@@ -39,9 +28,24 @@ def get_git_latest_tag():
         out = _minimal_ext_cmd("git describe --abbrev=0 --tags")
         git_tag = out.strip().decode('ascii')
     except OSError:
-        git_tag = "Unknown"
+        git_tag = None
 
     return git_tag
+
+
+latest_tag = get_git_latest_tag()
+if latest_tag is None:
+    print("get_git_latest_tag return None")
+    exit(1)
+
+# 读取项目下的requirements.txt
+req_txt_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
+if os.path.exists(req_txt_path):
+    with open(req_txt_path) as f:
+        req_list = f.readlines()
+    req_list = [x.strip() for x in req_list]
+else:
+    req_list = []
 
 
 def readme():
@@ -50,22 +54,16 @@ def readme():
         return f.read()
 
 
-class VerifyVersionCommand(install):
-    """确定当前分支的最新tag是否和VERSION变量一致,不一致则报错"""
-    description = 'verify that the git_hooks tag matches our version'
-
-    def run(self):
-        git_latest_tag = get_git_latest_tag()
-        if git_latest_tag != VERSION:
-            info = "Git tag: {0} does not match the version of this project: {1}".format(git_latest_tag, VERSION)
-            sys.exit(info)
-
+print("use latest tag as version: {}".format(latest_tag))
+print("use requirements.txt as install_requires: {}".format(req_list))
 
 setup(
     name="serial_module",
-    version=VERSION,
+    version=latest_tag,
+    url="https://github.com/KD-Group/serial_module",
     description="串行接口模块简单包装,支持模拟接口和真实接口",
     long_description=readme(),
+    long_description_content_type='text/markdown',
     author="Jefung",
     author_email="865424525@qq.com",
     license="MIT",
@@ -73,13 +71,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords='python serial',
-    packages=find_packages(exclude=['tests']),
-    install_requires=[
-        'serial',
-    ],
+    packages=["serial_module"],
+    install_requires=req_list,
     python_requires='>=3',
-    cmdclass={
-        # python setup.py verify 调用VerifyVersionCommand
-        'verify': VerifyVersionCommand,
-    }
 )

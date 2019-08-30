@@ -62,13 +62,6 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run:
-          name: verify git_hooks tag vs VERSION that occur in setup.py
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            python setup.py verify
-
-      - run:
           name: init .pypirc
           command: |
             echo -e "[pypi]" >> ~/.pypirc
