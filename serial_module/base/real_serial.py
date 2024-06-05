@@ -78,6 +78,12 @@ class RealSerial(SerialInterface):
         except serial.serialutil.SerialException as e:
             raise TimeoutException("串行接口超时： {}".format(str(e)))
 
+    def read_all(self):
+        try:
+            return self.port.read_all()
+        except serial.serialutil.SerialException as e:
+            raise TimeoutException("串行接口超时： {}".format(str(e)))
+
     # todo: timeout exception handle
     def read(self, size=1) -> str:
         try:

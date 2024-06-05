@@ -10,7 +10,7 @@ class MockSerial(SerialInterface):
     current_request = None
 
     @abstractmethod
-    def respond(self, input: str) -> str:
+    def respond(self, request: str) -> str:
         pass
 
     def send(self, data: str):
@@ -18,6 +18,9 @@ class MockSerial(SerialInterface):
             raise exception.NotConnectedException(
                 "未连接串行接口,请使用connect(port_name)或connect_suitable_port()进行连接")
         self.current_request = data
+
+    def read_all(self) -> str:
+        pass
 
     def read(self, size=1):
         pass

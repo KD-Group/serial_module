@@ -45,6 +45,10 @@ class SerialInterface(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def read_all(self) -> str:
+        pass
+
+    @abstractmethod
     def read(self, size=1) -> str:
         pass
 
