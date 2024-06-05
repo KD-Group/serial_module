@@ -29,7 +29,7 @@ print("use latest tag as version: {}".format(get_git_version()))
 print("use requirements.txt as install_requires: {}".format(req_list))
 
 setup(
-    name="serial_module",
+    name="KDSerial",
     version=get_git_version(),
     url="https://github.com/KD-Group/serial_module",
     description="串行接口模块简单包装,支持模拟接口和真实接口",
